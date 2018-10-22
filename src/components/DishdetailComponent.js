@@ -5,6 +5,7 @@ import { Card, CardImg, CardText, CardBody,
 import { Control, LocalForm, Errors } from 'react-redux-form';
 
 import { Link } from 'react-router-dom';
+import {Loading } from './LoadingComponent';
 
 const maxLength = (len) => (val) => !(val) || (val.length <= len);
 const minLength = (len) => (val) => val && (val.length >= len);
@@ -23,7 +24,7 @@ const minLength = (len) => (val) => val && (val.length >= len);
       );
   }
 
-  function RenderComments({comments}) {
+  function RenderComments({comments, addComment, dishId}) {
     if (comments != null)
         return (
           <div className="col-12 col-md-5 m-1">
@@ -38,7 +39,7 @@ const minLength = (len) => (val) => val && (val.length >= len);
                   );
               })}
             </ul>
-            <CommentForm />
+            <CommentForm dishId={dishId} addComment={addComment} />
           </div>
         );
     else
@@ -52,10 +53,13 @@ const minLength = (len) => (val) => val && (val.length >= len);
       constructor(props){
         super(props);
 
+        this.toggleCommentModal = this.toggleCommentModal.bind(this);
+        this.handleCommentModal = this.handleCommentModal.bind(this);
+
         this.state = {
+            isNavOpen: false,
             isCommentModalOpen: false
         };
-        this.toggleCommentModal = this.toggleCommentModal.bind(this);
       }
 
       toggleCommentModal() {
@@ -66,12 +70,13 @@ const minLength = (len) => (val) => val && (val.length >= len);
 
       handleCommentModal(values) {
           this.toggleCommentModal();
-          alert("Current State is: " + JSON.stringify(values));
+          console.log(values);
+          this.props.addComment(this.props.dishId, values.rating, values.author, values.comment);
       }
 
       render() {
           return(
-          <React.Fragment>
+          <div>
             <Button outline onClick={this.toggleCommentModal}>
               <span className="fa fa-pencil fa-sm"> Submin Comment</span>
             </Button>
@@ -80,8 +85,8 @@ const minLength = (len) => (val) => val && (val.length >= len);
                 <ModalBody>
                   <LocalForm onSubmit={(values) => this.handleCommentModal(values)}>
                   <Row className="form-group">
-                    <Label htmlFor="rating" md={10}>Rating</Label>
-                    <Col md={12}>
+                    <Col>
+                        <Label htmlFor="rating" md={10}>Rating</Label>
                         <Control.select model=".rating" name="rating"
                               className="form-control">
                               <option>1</option>
@@ -93,9 +98,9 @@ const minLength = (len) => (val) => val && (val.length >= len);
                     </Col>
                   </Row>
                   <Row className="form-group">
-                    <Label htmlFor="hisname" md={10}>Your Name</Label>
-                    <Col md={12}>
-                        <Control.text model=".hisname" id="hisname" name="hisname"
+                    <Col>
+                        <Label htmlFor="author">Your Name</Label>
+                        <Control.text model=".author" id="author" name="author"
                             placeholder="Your Name"
                             className="form-control"
                             validators={{
@@ -104,7 +109,7 @@ const minLength = (len) => (val) => val && (val.length >= len);
                               />
                             <Errors
                                className="text-danger"
-                               model=".hisname"
+                               model=".author"
                                show="touched"
                                messages={{
                                   minLength: 'Must be greater than 2 charecters. ',
@@ -114,29 +119,44 @@ const minLength = (len) => (val) => val && (val.length >= len);
                     </Col>
                   </Row>
                   <Row className="form-group">
-                      <Label htmlFor="message" md={2}>Comment</Label>
-                      <Col md={12}>
-                        <Control.textarea model=".message" id="message" name="message"
+                      <Col>
+                        <Label htmlFor="comment">Comment</Label>
+                        <Control.textarea model=".comment" id="comment" name="comment"
                                rows="6"
                                className="form-control"/>
                       </Col>
                     </Row>
-                    <Row className="form-group">
-                      <Col md={10}>
-                          <Button type="submit" color="primary">
+                          <Button type="submit" className="bg-primary" onClick={this.handleCommentModal}>
                           Submit
                           </Button>
-                      </Col>
-                    </Row>
                 </LocalForm>
                 </ModalBody>
             </Modal>
-          </React.Fragment>
-      )}
+          </div>
+      );
+    }
   }
 
   const DishDetail = (props) => {
-    if (props.dish != null)
+    if (props.isLoading) {
+        return(
+            <div className="container">
+                <div className="row">
+                    <Loading />
+                </div>
+            </div>
+        );
+    }
+    else if(props.errMess){
+      return(
+          <div className="container">
+              <div className="row">
+                 <h4>{props.errMess}</h4>
+              </div>
+          </div>
+      );
+    }
+    else if (props.dish != null)
       return (
         <div className="container">
           <div className="row">
@@ -151,7 +171,10 @@ const minLength = (len) => (val) => val && (val.length >= len);
           </div>
           <div className="row">
             <RenderDish dish={props.dish} />
-            <RenderComments comments={props.comments} />
+              <RenderComments comments={props.comments}
+                addComment={props.addComment}
+                dishId={props.dish.id}
+              />
           </div>
         </div>
       );
