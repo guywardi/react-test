@@ -24,22 +24,22 @@ const minLength = (len) => (val) => val && (val.length >= len);
       );
   }
 
-  function RenderComments({comments, addComment, dishId}) {
+  function RenderComments({comments, postComment, dishId}) {
     if (comments != null)
         return (
           <div className="col-12 col-md-5 m-1">
             <h4>Comments</h4>
             <ul className="list-unstyled">
-              {comments.map((comm) => {
+              {comments.map((comment) => {
                   return (
-                    <li key={comm.id}>
-                      <p>{comm.comment}</p>
-                      <p>-- {comm.author}, {new Intl.DateTimeFormat('en-US', {year: 'numeric', month: 'short', day: '2-digit'}).format(new Date(Date.parse(comm.date)))}</p>
+                    <li key={comment.id}>
+                      <p>{comment.comment}</p>
+                      <p>-- {comment.author}, {new Intl.DateTimeFormat('en-US', {year: 'numeric', month: 'short', day: '2-digit'}).format(new Date(Date.parse(comment.date)))}</p>
                     </li>
                   );
               })}
             </ul>
-            <CommentForm dishId={dishId} addComment={addComment} />
+            <CommentForm dishId={dishId} postComment={postComment} />
           </div>
         );
     else
@@ -71,7 +71,7 @@ const minLength = (len) => (val) => val && (val.length >= len);
       handleCommentModal(values) {
           this.toggleCommentModal();
           console.log(values);
-          this.props.addComment(this.props.dishId, values.rating, values.author, values.comment);
+          this.props.postComment(this.props.dishId, values.rating, values.author, values.comment);
       }
 
       render() {
@@ -86,7 +86,7 @@ const minLength = (len) => (val) => val && (val.length >= len);
                   <LocalForm onSubmit={(values) => this.handleCommentModal(values)}>
                   <Row className="form-group">
                     <Col>
-                        <Label htmlFor="rating" md={10}>Rating</Label>
+                        <Label htmlFor="rating">Rating</Label>
                         <Control.select model=".rating" name="rating"
                               className="form-control">
                               <option>1</option>
@@ -104,7 +104,8 @@ const minLength = (len) => (val) => val && (val.length >= len);
                             placeholder="Your Name"
                             className="form-control"
                             validators={{
-                                 minLength:minLength(3), maxLength: maxLength(15)
+                                 minLength:minLength(3),
+                                 maxLength: maxLength(15)
                             }}
                               />
                             <Errors
@@ -126,7 +127,7 @@ const minLength = (len) => (val) => val && (val.length >= len);
                                className="form-control"/>
                       </Col>
                     </Row>
-                          <Button type="submit" className="bg-primary" onClick={this.handleCommentModal}>
+                          <Button type="submit" className="bg-primary">
                           Submit
                           </Button>
                 </LocalForm>
@@ -172,7 +173,7 @@ const minLength = (len) => (val) => val && (val.length >= len);
           <div className="row">
             <RenderDish dish={props.dish} />
               <RenderComments comments={props.comments}
-                addComment={props.addComment}
+                postComment={props.postComment}
                 dishId={props.dish.id}
               />
           </div>
